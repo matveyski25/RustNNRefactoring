@@ -1,0 +1,10 @@
+[package]
+name = "RustNNRefactoring"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ndarray = "0.17.2"
+
+[lints]
+package.name = "allow"
