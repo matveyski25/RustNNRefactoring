@@ -2,8 +2,13 @@ use derive_more::Deref;
 use num_traits::Num;
 
 use crate::Base::{
-    bodies::base_nn::{BodyBaseNN, BodyComputeBlock, BodyTrainableComputeBlock},
-    interfaces::base_nn::{ComputeBlock, Optimizer, Randomizer, SaveManager, TranslatorMatrix},
+    bodies::base_nn::{
+        BodyBaseNN, BodyBaseTrainableNN, BodyComputeBlock, BodyTrainableComputeBlock,
+    },
+    interfaces::{
+        base_nn::{Optimizer, Randomizer, SaveManager, TranslatorMatrix},
+        base_rnn::{ComputeBlockRNN, TrainableComputeBlockRNN},
+    },
 };
 
 #[derive(Clone, Deref)]
@@ -16,12 +21,11 @@ pub struct BodyComputeBlockRNN<T: Num> {
 
 #[derive(Clone, Deref)]
 pub struct BodyTrainableComputeBlockRNN<T: Num, Ra: Randomizer, Op: Optimizer> {
-    pub body_compute_block_rnn: BodyComputeBlockRNN<T>,
     pub body_trainable_compute_block: BodyTrainableComputeBlock<T, Ra, Op>,
 }
 
 #[derive(Clone, Deref)]
-pub struct BodyBaseRNN<T: Num, SM: SaveManager, CB: ComputeBlock<T>, Tr: TranslatorMatrix<T>>(
+pub struct BodyBaseRNN<T: Num, SM: SaveManager, CB: ComputeBlockRNN<T>, Tr: TranslatorMatrix<T>>(
     BodyBaseNN<T, SM, CB, Tr>,
 ); //body_base_nn:
 
@@ -29,6 +33,9 @@ pub struct BodyBaseRNN<T: Num, SM: SaveManager, CB: ComputeBlock<T>, Tr: Transla
 pub struct BodyBaseTrainableRNN<
     T: Num,
     SM: SaveManager,
-    CB: ComputeBlock<T>,
+    CB: TrainableComputeBlockRNN<T>,
     Tr: TranslatorMatrix<T>,
->(BodyBaseRNN<T, SM, CB, Tr>); //body_base_rnn:
+> {
+    #[deref]
+    pub body_base_trainable: BodyBaseTrainableNN<T, SM, CB, Tr>,
+} //body_base_rnn:

@@ -25,20 +25,23 @@ pub struct BodyBaseNN<T: Num, SM: SaveManager, CB: ComputeBlock<T>, Tr: Translat
     _phantom_data: PhantomData<T>,
 }
 
-#[derive(Clone, Deref)]
+#[derive(Clone)]
 pub struct BodyTrainableComputeBlock<T: Num, Ra: Randomizer, Op: Optimizer> {
-    #[deref]
-    body_compute_block: BodyComputeBlock<T>,
     randomizer_: Box<Ra>,
     optimizer_: Box<Op>,
+    _phantom_data: PhantomData<T>,
 }
 
-#[derive(Clone, Deref)]
+#[derive(Clone)]
 pub struct BodyBaseTrainableNN<
     T: Num,
     SM: SaveManager,
     CB: ComputeBlock<T>,
     Tr: TranslatorMatrix<T>,
 > {
-    body_base_nn: BodyBaseNN<T, SM, CB, Tr>,
+    _phantom_data: PhantomData<T>,
+    _phantom_data1: PhantomData<SM>,
+    _phantom_data2: PhantomData<CB>,
+    _phantom_data3: PhantomData<Tr>,
+    //body_base_nn: BodyBaseNN<T, SM, CB, Tr>,
 }
