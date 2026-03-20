@@ -26,7 +26,7 @@ pub struct BodyTrainableComputeBlockRNN<T: Num, Ra: Randomizer, Op: Optimizer> {
 
 #[derive(Clone, Deref)]
 pub struct BodyBaseRNN<T: Num, SM: SaveManager, CB: ComputeBlockRNN<T>, Tr: TranslatorMatrix<T>>(
-    BodyBaseNN<T, SM, CB, Tr>,
+    pub BodyBaseNN<T, SM, CB, Tr>,
 ); //body_base_nn:
 
 #[derive(Clone, Deref)]
@@ -36,6 +36,5 @@ pub struct BodyBaseTrainableRNN<
     CB: TrainableComputeBlockRNN<T>,
     Tr: TranslatorMatrix<T>,
 > {
-    #[deref]
     pub body_base_trainable: BodyBaseTrainableNN<T, SM, CB, Tr>,
 } //body_base_rnn:

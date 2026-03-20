@@ -17,34 +17,6 @@ struct DefaultBodyLSTM<T: Num, SM: SaveManager, CB: ComputeBlockRNN<T>, Tr: Tran
     body_base_rnn: BodyBaseRNN<T, SM, CB, Tr>,
 }
 
-impl<T: Num, SM: SaveManager, CB: ComputeBlockRNN<T>, Tr: TranslatorMatrix<T>> ComputeBlockRNN<T>
-    for DefaultBodyLSTM<T, SM, CB, Tr>
-{
-    fn all_steps_calculation(&mut self) -> MayRes<&mut Self> {
-        todo!()
-    }
-
-    fn step_calculation(&mut self, step: u64) -> MayRes<&mut Self> {
-        todo!()
-    }
-}
-
-impl<T: Num, SM: SaveManager, CB: ComputeBlockRNN<T>, Tr: TranslatorMatrix<T>> ComputeBlock<T>
-    for DefaultBodyLSTM<T, SM, CB, Tr>
-{
-    fn set_input(&mut self, input: Matrix<T>) -> MayRes<&mut Self> {
-        todo!()
-    }
-
-    fn get_output(&self) -> MayRes<Matrix<T>> {
-        todo!()
-    }
-
-    fn compute(&mut self) -> MayRes<&mut Self> {
-        todo!()
-    }
-}
-
 struct DefaultBodyComputeBlockOneH<T: Num> {
     body_compute_block_rnn: BodyComputeBlockRNN<T>,
     U: Matrix<T>, //[H x 4H]
@@ -63,7 +35,7 @@ struct DefaultBodyComputeBlockOneH<T: Num> {
     tmp_o: Vector<T>,
     tmp_Z: Vector<T>,
 }
-impl<T: Num + Copy> DefaultBodyComputeBlockOneH<T> {
+impl<T: Num + Clone> DefaultBodyComputeBlockOneH<T> {
     fn setVoidNState(&mut self, hidden_size: u64) -> MayErr {
         self.n_cell_state = Vector::zeros(hidden_size as usize);
         self.n_hidden_state = Vector::zeros(hidden_size as usize);
@@ -76,5 +48,29 @@ impl<T: Num + Copy> DefaultBodyComputeBlockOneH<T> {
         self.tmp_Z = Vector::<T>::zeros((4 * hidden_size) as usize);
 
         return Ok(());
+    }
+}
+
+impl<T: Num> ComputeBlockRNN<T> for DefaultBodyComputeBlockOneH<T> {
+    fn all_steps_calculation(&mut self) -> MayRes<&mut Self> {
+        todo!()
+    }
+
+    fn step_calculation(&mut self, step: u64) -> MayRes<&mut Self> {
+        todo!()
+    }
+}
+
+impl<T: Num> ComputeBlock<T> for DefaultBodyComputeBlockOneH<T> {
+    fn set_input(&mut self, input: Matrix<T>) -> MayRes<&mut Self> {
+        todo!()
+    }
+
+    fn get_output(&self) -> MayRes<Matrix<T>> {
+        todo!()
+    }
+
+    fn compute(&mut self) -> MayRes<&mut Self> {
+        todo!()
     }
 }

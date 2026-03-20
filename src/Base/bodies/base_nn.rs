@@ -6,7 +6,6 @@ use crate::{
     },
     Utils::definitions_matrix::Matrix,
 };
-use derive_more::Deref;
 use num_traits::Num;
 
 #[derive(Clone)]
