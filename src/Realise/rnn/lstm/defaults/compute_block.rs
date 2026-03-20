@@ -8,26 +8,44 @@ use crate::{
     },
     Utils::definitions_matrix::{Matrix, Vector},
 };
+use derive_more::Deref;
 use num_traits::Num;
 
+#[derive(Clone, Deref)]
 struct DefaultBodyComputeBlockOneH<T: Num> {
-    body_compute_block_rnn: BodyComputeBlockRNN<T>,
-    U: Matrix<T>, //[H x 4H]
-    W: Matrix<T>, //[I x 4H]
-    B: Vector<T>, //[1 x 4H]
+    #[deref]
+    pub body_compute_block_rnn: BodyComputeBlockRNN<T>,
+    pub U: Matrix<T>, //[H x 4H]
+    pub W: Matrix<T>, //[I x 4H]
+    pub B: Vector<T>, //[1 x 4H]
 
     //LinearAlgebra::BaseMatrix<T> W_Out;
     //LinearAlgebra::BaseRowVector<T> B_Out;
 
     //input_state_n - [1 x I]
-    n_cell_state: Vector<T>,
-    n_hidden_state: Vector<T>, // [1 x H]
-    tmp_f: Vector<T>,
-    tmp_i: Vector<T>,
-    tmp_c_bar: Vector<T>,
-    tmp_o: Vector<T>,
-    tmp_Z: Vector<T>,
+    pub n_cell_state: Vector<T>,
+    pub n_hidden_state: Vector<T>, // [1 x H]
+    pub tmp_f: Vector<T>,
+    pub tmp_i: Vector<T>,
+    pub tmp_c_bar: Vector<T>,
+    pub tmp_o: Vector<T>,
+    pub tmp_Z: Vector<T>,
 }
+#[derive(Clone, Deref)]
+struct DefaultBodyComputeBlockAllH<T: Num> {
+    #[deref]
+    pub body_compute_block_one_h: DefaultBodyComputeBlockOneH<T>,
+    pub hidden_states_: Matrix<T>,
+}
+
+//#[derive(Clone, Deref)]
+//struct DefaultBodyTrainableComputeBlockOneH {}
+
+#[derive(Clone)]
+pub struct DefaultComputeBlockOneH<T: Num>(DefaultBodyComputeBlockOneH<T>);
+#[derive(Clone)]
+pub struct DefaultComputeBlockAllH<T: Num>(DefaultBodyComputeBlockAllH<T>);
+
 impl<T: Num + Clone> DefaultBodyComputeBlockOneH<T> {
     fn setVoidNState(&mut self, hidden_size: u64) -> MayErr {
         self.n_cell_state = Vector::zeros(hidden_size as usize);
