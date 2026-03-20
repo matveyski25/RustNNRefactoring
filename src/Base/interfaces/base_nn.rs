@@ -52,9 +52,9 @@ pub trait Optimizable {
 pub trait TranslatorMatrix<T: Num> {
     type Input;
     type Output;
-    fn to_matrix(&self, input: Self::Input) -> MayRes<Matrix<T>>;
-    fn from_matrix(&self, matrix_ref: &MatrixRef<T>) -> MayRes<Self::Output>;
-    fn from_matrixv(&self, matrix: Matrix<T>) -> MayRes<Self::Output>;
+    fn convert_to_matrix(&self, input: Self::Input) -> MayRes<Matrix<T>>;
+    fn convert_from_matrix(&self, matrix_ref: &MatrixRef<T>) -> MayRes<Self::Output>;
+    fn convert_from_matrixv(&self, matrix: Matrix<T>) -> MayRes<Self::Output>;
 }
 
 pub trait Translatable<T: Num> {

@@ -1,5 +1,3 @@
-use std::u64;
-
 use num_traits::Num;
 
 use crate::Base::interfaces::base_nn::{ComputeBlock, MayRes, TrainableComputeBlock};
