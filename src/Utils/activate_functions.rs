@@ -1,74 +1,71 @@
 #![allow(dead_code)]
-use super::definitions_matrix::{Matrix, MatrixRef, Vector, VectorRef};
-use ndarray::{ScalarOperand, Zip};
-use ndarray_stats::QuantileExt;
-use num_traits::{Float, Num};
+use super::definitions_matrix::{Vector, VectorRef};
+use ndarray::{Array, ArrayRef, Dimension, LinalgScalar, ScalarOperand, Zip};
+use num_traits::Float;
 
-pub fn step_function<T: Num + PartialOrd>(matx: &MatrixRef<T>, step: T) -> Matrix<T> {
-    return matx.map(|x| if *x >= step { T::one() } else { T::zero() });
+
+// Обобщённая сигмоида для любой размерности
+pub fn sigmoid<T: Float, D: Dimension>(x: &ArrayRef<T, D>) -> Array<T, D> {
+    x.mapv(|v| T::one() / (T::one() + (-v).exp()))
 }
 
-pub fn sigmoid<T: Float>(matx: &MatrixRef<T>) -> Matrix<T> {
-    return matx.map(|x: &T| T::one() / (T::one() + (-*x).exp()));
+// Обобщённый tanh
+pub fn tanh<T: Float, D: Dimension>(x: &ArrayRef<T, D>) -> Array<T, D> {
+    x.mapv(|v| v.tanh())
 }
 
-pub fn tanh<T: Float>(matx: &MatrixRef<T>) -> Matrix<T> {
-    return matx.map(|x: &T| x.tanh());
+// Шаговая функция
+pub fn step_function<T: LinalgScalar + PartialOrd, D: Dimension>(
+    x: &ArrayRef<T, D>,
+    step: T,
+) -> Array<T, D> {
+    x.mapv(|v| if v >= step { T::one() } else { T::zero() })
 }
 
-pub fn ReLU<T: Num + PartialOrd + Copy>(matx: &MatrixRef<T>) -> Matrix<T> {
-    return matx.map(|x: &T| if *x >= T::zero() { *x } else { T::zero() });
+// ReLU
+pub fn relu<T: LinalgScalar + PartialOrd + Copy, D: Dimension>(x: &ArrayRef<T, D>) -> Array<T, D> {
+    x.mapv(|v| if v >= T::zero() { v } else { T::zero() })
 }
 
-pub fn leaky_ReLU_matrix<T: Num + PartialOrd + Copy>(
-    matx: &MatrixRef<T>,
-    alpha: &MatrixRef<T>,
-) -> Matrix<T> {
-    //if (matx.nrows() != alpha.nrows() || matx.ncols() != alphaa.ncols()) {
-    //	return Err("Matrix dimensions must match");
-    //}
-    debug_assert!(matx.nrows() != alpha.nrows() || matx.ncols() != alpha.ncols());
-
-    return Zip::from(matx)
+// Leaky ReLU с поэлементным alpha
+pub fn leaky_relu<T: LinalgScalar + PartialOrd + Copy, D: Dimension>(
+    x: &ArrayRef<T, D>,
+    alpha: &ArrayRef<T, D>,
+) -> Array<T, D> {
+    assert_eq!(x.shape(), alpha.shape());
+    Zip::from(x)
         .and(alpha)
-        .map_collect(|x, a| if *x >= T::zero() { *x } else { (*x) * (*a) });
+        .map_collect(|&xv, &av| if xv >= T::zero() { xv } else { xv * av })
 }
 
-pub fn leaky_ReLU<T: Num + PartialOrd + Copy>(matx: &MatrixRef<T>, alpha: T) -> Matrix<T> {
-    return matx.map(|x| if *x >= T::zero() { *x } else { (*x) * alpha });
+// Leaky ReLU со скалярным alpha
+pub fn leaky_relu_scalar<T: LinalgScalar + PartialOrd + Copy, D: Dimension>(
+    x: &ArrayRef<T, D>,
+    alpha: T,
+) -> Array<T, D> {
+    x.mapv(|v| if v >= T::zero() { v } else { v * alpha })
 }
 
-pub fn swish_matrix<T: Float>(matx: &MatrixRef<T>, b: &MatrixRef<T>) -> Matrix<T> {
-    //if (matx.nrows() != b.nrows() || matx.ncols() != b.ncols()) {
-    //	return Err("Matrix dimensions must match");
-    //}
-    debug_assert!(matx.nrows() != b.nrows() || matx.ncols() != b.ncols());
-
-    return Zip::from(matx)
+// Swish с поэлементным b
+pub fn swish<T: Float, D: Dimension>(x: &ArrayRef<T, D>, b: &ArrayRef<T, D>) -> Array<T, D> {
+    assert_eq!(x.shape(), b.shape());
+    Zip::from(x)
         .and(b)
-        .map_collect(|x, bb| *x / ((T::one() - ((*x) * (*bb))).exp()));
+        .map_collect(|&xv, &bv| xv / (T::one() + (-xv * bv).exp()))
 }
 
-pub fn swish<T: Float>(matx: &MatrixRef<T>, b: T) -> Matrix<T> {
-    return matx.map(|x| *x / (T::one() - (*x * b)).exp());
+// Swish со скалярным b
+pub fn swish_scalar<T: Float, D: Dimension>(x: &ArrayRef<T, D>, b: T) -> Array<T, D> {
+    x.mapv(|v| v / (T::one() + (-v * b).exp()))
 }
 
+// Softmax для векторов (оставляем одномерным)
 pub fn softmax<T: Float + ScalarOperand>(x: &VectorRef<T>, clamp_val: T, eps: T) -> Vector<T> {
-    // 1) Клэмпим входы
-    let x_clamped: Vector<T> = x.map(|v| T::max(-clamp_val, T::min(clamp_val, *v)));
-
-    // 2) Вычисляем максимум
+    let x_clamped = x.mapv(|v| T::max(-clamp_val, T::min(clamp_val, v)));
     let x_max = x_clamped
         .iter()
-        .max_by(|&a, &b| a.partial_cmp(b).unwrap())
-        .unwrap();
-
-    // 3) Вычисляем экспоненты от (x - max)
-    let exp_x: Vector<T> = x_clamped.mapv(|xx| (xx - *x_max).exp());
-
-    // 4) Сумма с eps
-    let sum_exp: T = *exp_x.max().unwrap() + eps;
-
-    // 5) Нормировка
-    return exp_x / sum_exp;
+        .fold(T::neg_infinity(), |a, &b| a.max(b));
+    let exp_x = x_clamped.mapv(|xx| (xx - x_max).exp());
+    let sum_exp = exp_x.sum() + eps;
+    exp_x / sum_exp
 }

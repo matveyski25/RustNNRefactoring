@@ -1,39 +1,40 @@
 use std::marker::PhantomData;
 
+use ndarray::LinalgScalar;
+
 use crate::{
     Base::interfaces::base_nn::{
         ComputeBlock, Optimizer, Randomizer, SaveManager, TranslatorMatrix,
     },
     Utils::definitions_matrix::Matrix,
 };
-use num_traits::Num;
 
 #[derive(Clone)]
-pub struct BodyComputeBlock<T: Num> {
-    pub input_state: Matrix<T>,
-    pub output_state_: Matrix<T>,
-    pub input_size_: u64,
-    pub output_size_: u64,
+pub struct BodyComputeBlock<T: LinalgScalar> {
+    pub input_state: Matrix<T>, // [I x N] N - input_lenght
+    pub output_state: Matrix<T>, // [1 x H]
+    pub input_size: u64,
+    pub output_size: u64,
 }
 
 #[derive(Clone)]
-pub struct BodyBaseNN<T: Num, SM: SaveManager, CB: ComputeBlock<T>, Tr: TranslatorMatrix<T>> {
-    pub save_load_manager_: Box<SM>,
-    pub compute_block_: Box<CB>,
-    pub translator_: Box<Tr>,
+pub struct BodyBaseNN<T: LinalgScalar, SM: SaveManager, CB: ComputeBlock<T>, Tr: TranslatorMatrix<T>> {
+    pub save_load_manager: Box<SM>,
+    pub compute_block: Box<CB>,
+    pub translator: Box<Tr>,
     _phantom_data: PhantomData<T>,
 }
 
 #[derive(Clone)]
-pub struct BodyTrainableComputeBlock<T: Num, Ra: Randomizer, Op: Optimizer> {
-    randomizer_: Box<Ra>,
-    optimizer_: Box<Op>,
+pub struct BodyTrainableComputeBlock<T: LinalgScalar, Ra: Randomizer, Op: Optimizer> {
+    randomizer: Box<Ra>,
+    optimizer: Box<Op>,
     _phantom_data: PhantomData<T>,
 }
 
 #[derive(Clone)]
 pub struct BodyBaseTrainableNN<
-    T: Num,
+    T: LinalgScalar,
     SM: SaveManager,
     CB: ComputeBlock<T>,
     Tr: TranslatorMatrix<T>,

@@ -1,5 +1,5 @@
 use crate::Utils::definitions_matrix::{Matrix, MatrixRef};
-use num_traits::Num;
+use ndarray::LinalgScalar;
 
 pub type MayRes<T> = Result<T, ()>;
 pub type MayErr = MayRes<()>;
@@ -20,13 +20,13 @@ pub trait Savable {
     fn get_save_manager(&mut self) -> MayRes<&impl SaveManager>;
 }
 
-pub trait ComputeBlock<T: Num> {
-    fn set_input(&mut self, input: Matrix<T>) -> MayRes<&mut Self>;
+pub trait ComputeBlock<T: LinalgScalar> {
+    fn set_input(&mut self, input: Matrix<T>) -> &mut Self;
     fn get_output(&self) -> MayRes<Matrix<T>>;
     fn compute(&mut self) -> MayRes<&mut Self>;
 }
 
-pub trait Computable<T: Num> {
+pub trait Computable<T: LinalgScalar> {
     fn set_compute_block(&mut self, compute_block: Box<impl ComputeBlock<T>>) -> MayRes<&mut Self>;
     fn get_compute_block(&self) -> MayRes<&impl ComputeBlock<T>>;
 }
@@ -49,7 +49,7 @@ pub trait Optimizable {
     fn get_optimizer(&self) -> MayRes<&impl Optimizer>;
 }
 
-pub trait TranslatorMatrix<T: Num> {
+pub trait TranslatorMatrix<T: LinalgScalar> {
     type Input;
     type Output;
     fn convert_to_matrix(&self, input: Self::Input) -> MayRes<Matrix<T>>;
@@ -57,14 +57,14 @@ pub trait TranslatorMatrix<T: Num> {
     fn convert_from_matrixv(&self, matrix: Matrix<T>) -> MayRes<Self::Output>;
 }
 
-pub trait Translatable<T: Num> {
+pub trait Translatable<T: LinalgScalar> {
     type Input;
     type Output;
     fn set_translator(&mut self, translator: Box<impl TranslatorMatrix<T>>) -> MayRes<&mut Self>;
     fn get_translator(&self) -> MayRes<&impl TranslatorMatrix<T>>;
 }
 
-pub trait BaseNN<T: Num>: Savable + Computable<T> + Translatable<T> {
+pub trait BaseNN<T: LinalgScalar>: Savable + Computable<T> + Translatable<T> {
     type Translator: TranslatorMatrix<T>;
     type Saver: SaveManager;
     type ComputeBlock: ComputeBlock<T>;
@@ -76,7 +76,10 @@ pub trait BaseNN<T: Num>: Savable + Computable<T> + Translatable<T> {
     fn inference(&self) -> MayRes<&Self>; //may will be &mut
 }
 
-pub trait TrainableComputeBlock<T: Num>: ComputeBlock<T> + Randomizable + Optimizable {
+pub trait TrainableComputeBlock<T: LinalgScalar>: ComputeBlock<T> + Randomizable + Optimizable {
     fn backward(&self) -> MayRes<&Self>;
     fn get_deltas_weights(&self) -> MayRes<&Self>;
 }
+
+
+//Trainable version trait for base trait BaseNN not be
